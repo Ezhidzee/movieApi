@@ -48,8 +48,8 @@ public class MainController {
         }
     }
 
-    @PatchMapping(path = "/patchMovie/{id}")
-    public ResponseEntity patchMovie(@PathVariable Integer id, @RequestBody JsonPatch patch) {
+    @PatchMapping(path = "/patchMovie", params = {"id"})
+    public ResponseEntity patchMovie(@RequestParam Integer id, @RequestBody JsonPatch patch) {
         try {
             return ResponseEntity.ok(movieService.patchMovie(id, patch));
         } catch (Exception e) {
