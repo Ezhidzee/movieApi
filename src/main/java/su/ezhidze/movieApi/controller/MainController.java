@@ -7,7 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import su.ezhidze.movieApi.entity.MovieEntity;
-import su.ezhidze.movieApi.exception.*;
+import su.ezhidze.movieApi.exception.BadArgumentException;
+import su.ezhidze.movieApi.exception.DuplicateEntryException;
+import su.ezhidze.movieApi.exception.ExceptionBodyBuilder;
+import su.ezhidze.movieApi.exception.RecordNotFoundException;
 import su.ezhidze.movieApi.service.MovieService;
 
 @Controller
@@ -52,6 +55,18 @@ public class MainController {
     public ResponseEntity patchMovie(@RequestParam Integer id, @RequestBody JsonPatch patch) {
         try {
             return ResponseEntity.ok(movieService.patchMovie(id, patch));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ExceptionBodyBuilder.build(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+        }
+    }
+
+    @DeleteMapping(path = "/deleteMovie", params = {"id"})
+    public ResponseEntity deleteMovie(@RequestParam Integer id) {
+        try {
+            movieService.delete(id);
+            return ResponseEntity.accepted().build();
+        } catch (RecordNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ExceptionBodyBuilder.build(HttpStatus.NOT_FOUND.value(), e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ExceptionBodyBuilder.build(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
         }

@@ -56,8 +56,12 @@ public class MovieService {
         return movieRepository.findAll();
     }
 
-    public MovieEntity patchMovie(@RequestParam Integer id, @RequestBody JsonPatch patch) throws JsonPatchException, JsonProcessingException {
+    public MovieEntity patchMovie(Integer id, JsonPatch patch) throws JsonPatchException, JsonProcessingException {
         JsonNode patched = patch.apply(objectMapper.convertValue(getMovieById(id), JsonNode.class));
         return movieRepository.save(objectMapper.treeToValue(patched, MovieEntity.class));
+    }
+
+    public void delete(Integer id) {
+        movieRepository.delete(getMovieById(id));
     }
 }
