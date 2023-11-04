@@ -3,15 +3,15 @@ package su.ezhidze.movieApi.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.sql.Time;
 
 @Entity
-public class MovieEntity {
+public class Movie {
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
     @NotNull(message = "Title cannot be null")
@@ -24,10 +24,9 @@ public class MovieEntity {
     @Max(value = 2100, message = "Year should not be greater than 2100")
     private Integer year;
 
-    @NotNull(message = "Director field cannot be null")
-    @Size(min = 1, message = "Director field should not be empty")
-    @Size(max = 100, message = "Director field length should not be greater than 100 symbols")
-    private String director;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "director_id")
+    private Director director;
 
     @NotNull(message = "Length cannot be null")
     private Time length;
@@ -37,15 +36,11 @@ public class MovieEntity {
     @Max(value = 10, message = "Rating should not be greater than 10")
     private Integer rating;
 
-    public MovieEntity() {
+    public Movie() {
     }
 
     public Integer getId() {
         return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public String getTitle() {
@@ -64,14 +59,6 @@ public class MovieEntity {
         this.year = year;
     }
 
-    public String getDirector() {
-        return director;
-    }
-
-    public void setDirector(String director) {
-        this.director = director;
-    }
-
     public Time getLength() {
         return length;
     }
@@ -86,5 +73,13 @@ public class MovieEntity {
 
     public void setRating(Integer rating) {
         this.rating = rating;
+    }
+
+    public Director getDirector() {
+        return director;
+    }
+
+    public void setDirector(Director director) {
+        this.director = director;
     }
 }

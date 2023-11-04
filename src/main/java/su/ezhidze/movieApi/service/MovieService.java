@@ -10,15 +10,18 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import su.ezhidze.movieApi.entity.MovieEntity;
+import su.ezhidze.movieApi.entity.Movie;
 import su.ezhidze.movieApi.exception.BadArgumentException;
 import su.ezhidze.movieApi.exception.DuplicateEntryException;
 import su.ezhidze.movieApi.exception.RecordNotFoundException;
+import su.ezhidze.movieApi.model.MovieModel;
+import su.ezhidze.movieApi.repository.DirectorRepository;
 import su.ezhidze.movieApi.repository.MovieRepository;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class MovieService {
@@ -29,39 +32,46 @@ public class MovieService {
     private MovieRepository movieRepository;
 
     @Autowired
+    private DirectorRepository directorRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
-    public MovieEntity addNewMovie(MovieEntity movie) {
+    public MovieModel addNewMovie(Movie movie, Integer directorId) {
         if (movieRepository.findByTitle(movie.getTitle()) != null) {
             throw new DuplicateEntryException("Duplicate movie title");
         }
 
-        Set<ConstraintViolation<MovieEntity>> violations = validator.validate(movie);
+        Set<ConstraintViolation<Movie>> violations = validator.validate(movie);
         if (!violations.isEmpty()) {
             String message = "";
-            for (ConstraintViolation<MovieEntity> i : violations) {
+            for (ConstraintViolation<Movie> i : violations) {
                 message += i.getMessage() + ". ";
             }
             throw new BadArgumentException(message);
         }
 
-        return movieRepository.save(movie);
+        movie.setDirector(directorRepository.findById(directorId).orElseThrow(() -> new RecordNotFoundException("Director not found")));
+
+        return new MovieModel(movieRepository.save(movie));
     }
 
-    public MovieEntity getMovieById(Integer id) {
-        return movieRepository.findById(id).orElseThrow(() -> new RecordNotFoundException("Movie not found"));
+    public MovieModel getMovieById(Integer id) {
+        return new MovieModel(movieRepository.findById(id).orElseThrow(() -> new RecordNotFoundException("Movie not found")));
     }
 
-    public Iterable<MovieEntity> getMovies() {
-        return movieRepository.findAll();
+    public Iterable<MovieModel> getMovies() {
+        List<MovieModel> t = new ArrayList<>();
+        for (Movie i : movieRepository.findAll()) t.add(new MovieModel(i));
+        return t;
     }
 
-    public MovieEntity patchMovie(Integer id, JsonPatch patch) throws JsonPatchException, JsonProcessingException {
+    public MovieModel patchMovie(Integer id, JsonPatch patch) throws JsonPatchException, JsonProcessingException {
         JsonNode patched = patch.apply(objectMapper.convertValue(getMovieById(id), JsonNode.class));
-        return movieRepository.save(objectMapper.treeToValue(patched, MovieEntity.class));
+        return new MovieModel(movieRepository.save(objectMapper.treeToValue(patched, Movie.class)));
     }
 
     public void delete(Integer id) {
-        movieRepository.delete(getMovieById(id));
+        movieRepository.delete(movieRepository.findById(id).orElseThrow(() -> new RecordNotFoundException("Movie not found")));
     }
 }
