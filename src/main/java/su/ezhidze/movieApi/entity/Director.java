@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -21,6 +22,7 @@ public class Director {
     private List<Movie> movies;
 
     public Director() {
+        movies = new ArrayList<>();
     }
 
     public Integer getId() {

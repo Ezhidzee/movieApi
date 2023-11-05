@@ -1,10 +1,6 @@
 package su.ezhidze.movieApi.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.fge.jsonpatch.JsonPatch;
-import com.github.fge.jsonpatch.JsonPatchException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -18,10 +14,11 @@ import su.ezhidze.movieApi.model.MovieModel;
 import su.ezhidze.movieApi.repository.DirectorRepository;
 import su.ezhidze.movieApi.repository.MovieRepository;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class MovieService {
@@ -66,9 +63,20 @@ public class MovieService {
         return t;
     }
 
-    public MovieModel patchMovie(Integer id, JsonPatch patch) throws JsonPatchException, JsonProcessingException {
-        JsonNode patched = patch.apply(objectMapper.convertValue(getMovieById(id), JsonNode.class));
-        return new MovieModel(movieRepository.save(objectMapper.treeToValue(patched, Movie.class)));
+    public MovieModel patchMovie(Integer movieId, Map<String, Object> fields) {
+        Movie patchedMovie = movieRepository.findById(movieId).orElseThrow(() -> new RecordNotFoundException("Movie not found"));
+        if (fields.get("directorId") != null && patchedMovie.getDirector().getId() != fields.get("directorId")) {
+            patchedMovie.setDirector(directorRepository.findById((Integer) fields.get("directorId")).orElseThrow(() -> new RecordNotFoundException("Director not found")));
+        }
+        if (fields.get("title") != null) {
+            if (movieRepository.findByTitle((String) fields.get("title")) != null) throw new DuplicateEntryException("Duplicate movie title");
+            patchedMovie.setTitle((String) fields.get("title"));
+        }
+        if (fields.get("year") != null) patchedMovie.setYear((Integer) fields.get("year"));
+        if (fields.get("length") != null) patchedMovie.setLength((Time) fields.get("length"));
+        if (fields.get("rating") != null) patchedMovie.setRating((Integer) fields.get("rating"));
+        movieRepository.save(patchedMovie);
+        return new MovieModel(patchedMovie);
     }
 
     public void delete(Integer id) {

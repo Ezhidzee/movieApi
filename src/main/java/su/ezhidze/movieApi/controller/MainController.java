@@ -1,6 +1,5 @@
 package su.ezhidze.movieApi.controller;
 
-import com.github.fge.jsonpatch.JsonPatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +13,8 @@ import su.ezhidze.movieApi.exception.ExceptionBodyBuilder;
 import su.ezhidze.movieApi.exception.RecordNotFoundException;
 import su.ezhidze.movieApi.service.DirectorService;
 import su.ezhidze.movieApi.service.MovieService;
+
+import java.util.Map;
 
 @Controller
 @RequestMapping(path = "/movieApi")
@@ -57,9 +58,11 @@ public class MainController {
     }
 
     @PatchMapping(path = "/patchMovie", params = {"id"})
-    public ResponseEntity patchMovie(@RequestParam Integer id, @RequestBody JsonPatch patch) {
+    public ResponseEntity patchMovie(@RequestParam Integer id, @RequestBody Map<String, Object> fields) {
         try {
-            return ResponseEntity.ok(movieService.patchMovie(id, patch));
+            return ResponseEntity.ok(movieService.patchMovie(id, fields));
+        } catch (DuplicateEntryException | BadArgumentException e) {
+            return ResponseEntity.internalServerError().body(ExceptionBodyBuilder.build(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ExceptionBodyBuilder.build(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
         }
