@@ -111,6 +111,17 @@ public class MainController {
         }
     }
 
+    @PatchMapping(path = "/patchDirector", params = {"id"})
+    public ResponseEntity patchDirector(@RequestParam Integer id, @RequestBody Map<String, Object> fields) {
+        try {
+            return ResponseEntity.ok(directorService.patchDirector(id, fields));
+        } catch (DuplicateEntryException | BadArgumentException e) {
+            return ResponseEntity.internalServerError().body(ExceptionBodyBuilder.build(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ExceptionBodyBuilder.build(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+        }
+    }
+
     @DeleteMapping(path = "/deleteDirector", params = {"id"})
     public ResponseEntity deleteDirector(@RequestParam Integer id) {
         try {

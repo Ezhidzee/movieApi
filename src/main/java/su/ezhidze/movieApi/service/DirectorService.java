@@ -14,6 +14,7 @@ import su.ezhidze.movieApi.repository.DirectorRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -49,6 +50,17 @@ public class DirectorService {
         List<DirectorModel> t = new ArrayList<>();
         for (Director i : directorRepository.findAll()) t.add(new DirectorModel(i));
         return t;
+    }
+
+    public DirectorModel patchDirector(Integer id, Map<String, Object> fields) {
+        Director patchedDirector = directorRepository.findById(id).orElseThrow(() -> new RecordNotFoundException("Director not found"));
+        if (fields.get("name") != null) {
+            if (directorRepository.findByName((String) fields.get("name")) != null)
+                throw new DuplicateEntryException("Duplicate director name");
+            patchedDirector.setName((String) fields.get("name"));
+        }
+        directorRepository.save(patchedDirector);
+        return new DirectorModel(patchedDirector);
     }
 
     public void delete(Integer id) {
