@@ -11,7 +11,9 @@ public class MovieModel {
 
     private Integer year;
 
-    private String director;
+    private String directorName;
+
+    private Integer directorId;
 
     private Time length;
 
@@ -21,7 +23,8 @@ public class MovieModel {
         id = movie.getId();
         title = movie.getTitle();
         year = movie.getYear();
-        director = movie.getDirector().getName();
+        directorName = movie.getDirector().getName();
+        directorId = movie.getDirector().getId();
         length = movie.getLength();
         rating = movie.getRating();
     }
@@ -50,13 +53,13 @@ public class MovieModel {
         this.year = year;
     }
 
-    public String getDirector() {
-        return director;
-    }
+    public String getDirectorName() { return directorName; }
 
-    public void setDirector(String director) {
-        this.director = director;
-    }
+    public void setDirectorName(String directorName) { this.directorName = directorName; }
+
+    public Integer getDirectorId() { return directorId; }
+
+    public void setDirectorId(Integer directorId) { this.directorId = directorId; }
 
     public Time getLength() {
         return length;
