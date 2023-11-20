@@ -1,43 +1,33 @@
 package su.ezhidze.movieApi.service;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import su.ezhidze.movieApi.entity.Director;
-import su.ezhidze.movieApi.exception.BadArgumentException;
 import su.ezhidze.movieApi.exception.DuplicateEntryException;
 import su.ezhidze.movieApi.exception.RecordNotFoundException;
 import su.ezhidze.movieApi.model.DirectorModel;
 import su.ezhidze.movieApi.repository.DirectorRepository;
+import su.ezhidze.movieApi.repository.MovieRepository;
+import su.ezhidze.movieApi.validator.Validator;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Service
 public class DirectorService {
 
-    private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-
     @Autowired
     DirectorRepository directorRepository;
+
+    @Autowired
+    private MovieRepository movieRepository;
 
     public DirectorModel addNewDirector(Director director) {
         if (directorRepository.findByName(director.getName()) != null) {
             throw new DuplicateEntryException("Duplicate director name");
         }
 
-        Set<ConstraintViolation<Director>> violations = validator.validate(director);
-        if (!violations.isEmpty()) {
-            String message = "";
-            for (ConstraintViolation<Director> i : violations) {
-                message += i.getMessage() + ". ";
-            }
-            throw new BadArgumentException(message);
-        }
+        Validator.validate(director);
 
         return new DirectorModel(directorRepository.save(director));
     }
@@ -46,10 +36,17 @@ public class DirectorService {
         return new DirectorModel(directorRepository.findById(id).orElseThrow(() -> new RecordNotFoundException("Director not found")));
     }
 
-    public Iterable<DirectorModel> getDirectors() {
-        List<DirectorModel> t = new ArrayList<>();
-        for (Director i : directorRepository.findAll()) t.add(new DirectorModel(i));
-        return t;
+    public ArrayList<DirectorModel> getDirectors() {
+        ArrayList<DirectorModel> directors = new ArrayList<>();
+        for (Director director : directorRepository.findAll()) directors.add(new DirectorModel(director));
+        return directors;
+    }
+
+    public DirectorModel addMovie(Integer directorId, Integer movieId) {
+        Director director = directorRepository.findById(directorId).orElseThrow(() -> new RecordNotFoundException("Director not found"));
+        director.getMovies().add(movieRepository.findById(movieId).orElseThrow(() -> new RecordNotFoundException("Movie not found")));
+
+        return new DirectorModel(director);
     }
 
     public DirectorModel patchDirector(Integer id, Map<String, Object> fields) {

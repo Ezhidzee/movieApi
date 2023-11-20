@@ -26,17 +26,6 @@ public class MainController {
     @Autowired
     private DirectorService directorService;
 
-    @PostMapping(path = "/addMovie", params = {"directorId"})
-    public ResponseEntity addNewMovie(@RequestBody Movie movie, @RequestParam Integer directorId) {
-        try {
-            return ResponseEntity.ok(movieService.addNewMovie(movie, directorId));
-        } catch (DuplicateEntryException | BadArgumentException e) {
-            return ResponseEntity.internalServerError().body(ExceptionBodyBuilder.build(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(ExceptionBodyBuilder.build(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
-        }
-    }
-
     @GetMapping(path = "/movies", params = {"id"})
     public ResponseEntity getMovieById(@RequestParam Integer id) {
         try {
@@ -57,7 +46,29 @@ public class MainController {
         }
     }
 
-    @PatchMapping(path = "/patchMovie", params = {"id"})
+    @PostMapping(path = "/movies/add")
+    public ResponseEntity addNewMovie(@RequestBody Movie movie) {
+        try {
+            return ResponseEntity.ok(movieService.addNewMovie(movie));
+        } catch (DuplicateEntryException | BadArgumentException e) {
+            return ResponseEntity.internalServerError().body(ExceptionBodyBuilder.build(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ExceptionBodyBuilder.build(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+        }
+    }
+
+    @PutMapping(path = "/movies/setDirector")
+    public ResponseEntity setDirector(@RequestParam Integer movieId, @RequestParam Integer directorId) {
+        try {
+            return ResponseEntity.ok(movieService.setDirector(movieId, directorId));
+        } catch (RecordNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ExceptionBodyBuilder.build(HttpStatus.NOT_FOUND.value(), e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ExceptionBodyBuilder.build(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+        }
+    }
+
+    @PatchMapping(path = "/movies/patch", params = {"id"})
     public ResponseEntity patchMovie(@RequestParam Integer id, @RequestBody Map<String, Object> fields) {
         try {
             return ResponseEntity.ok(movieService.patchMovie(id, fields));
@@ -68,7 +79,7 @@ public class MainController {
         }
     }
 
-    @DeleteMapping(path = "/deleteMovie", params = {"id"})
+    @DeleteMapping(path = "/movies/delete", params = {"id"})
     public ResponseEntity deleteMovie(@RequestParam Integer id) {
         try {
             movieService.delete(id);
@@ -80,7 +91,7 @@ public class MainController {
         }
     }
 
-    @PostMapping(path = "/addDirector")
+    @PostMapping(path = "/directors/add")
     public ResponseEntity addNewMovie(@RequestBody Director director) {
         try {
             return ResponseEntity.ok(directorService.addNewDirector(director));
@@ -111,7 +122,18 @@ public class MainController {
         }
     }
 
-    @PatchMapping(path = "/patchDirector", params = {"id"})
+    @PutMapping(path = "/directors/addMovie")
+    public ResponseEntity addMovie(@RequestParam Integer directorId, @RequestParam Integer movieId) {
+        try {
+            return ResponseEntity.ok(directorService.addMovie(directorId, movieId));
+        } catch (RecordNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ExceptionBodyBuilder.build(HttpStatus.NOT_FOUND.value(), e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ExceptionBodyBuilder.build(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+        }
+    }
+
+    @PatchMapping(path = "/directors/patch", params = {"id"})
     public ResponseEntity patchDirector(@RequestParam Integer id, @RequestBody Map<String, Object> fields) {
         try {
             return ResponseEntity.ok(directorService.patchDirector(id, fields));
@@ -122,7 +144,7 @@ public class MainController {
         }
     }
 
-    @DeleteMapping(path = "/deleteDirector", params = {"id"})
+    @DeleteMapping(path = "/directors/delete", params = {"id"})
     public ResponseEntity deleteDirector(@RequestParam Integer id) {
         try {
             directorService.delete(id);
@@ -133,4 +155,6 @@ public class MainController {
             return ResponseEntity.badRequest().body(ExceptionBodyBuilder.build(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
         }
     }
+
+
 }
