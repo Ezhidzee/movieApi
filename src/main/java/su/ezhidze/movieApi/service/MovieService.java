@@ -14,6 +14,7 @@ import su.ezhidze.movieApi.validator.Validator;
 
 import java.sql.Time;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 
 @Service
@@ -52,9 +53,7 @@ public class MovieService {
     }
 
     public ArrayList<MovieModel> getMovies() {
-        ArrayList<MovieModel> movies = new ArrayList<>();
-        for (Movie movie : movieRepository.findAll()) movies.add(new MovieModel(movie));
-        return movies;
+        return new ArrayList<>(((Collection<Movie>) movieRepository.findAll()).stream().map(MovieModel::new).toList());
     }
 
     public MovieModel setDirector(Integer movieId, Integer directorId) {

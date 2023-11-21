@@ -13,6 +13,7 @@ import su.ezhidze.movieApi.repository.MovieRepository;
 import su.ezhidze.movieApi.validator.Validator;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 
 @Service
@@ -39,9 +40,7 @@ public class DirectorService {
     }
 
     public ArrayList<DirectorModel> getDirectors() {
-        ArrayList<DirectorModel> directors = new ArrayList<>();
-        for (Director director : directorRepository.findAll()) directors.add(new DirectorModel(director));
-        return directors;
+        return new ArrayList<>(((Collection<Director>) directorRepository.findAll()).stream().map(DirectorModel::new).toList());
     }
 
     public DirectorModel addMovie(Integer directorId, Integer movieId) {

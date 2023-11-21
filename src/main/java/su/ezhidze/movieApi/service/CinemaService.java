@@ -59,10 +59,8 @@ public class CinemaService {
 
     public ArrayList<DirectorModel> getDirectors(Integer id) {
         Cinema cinema = cinemaRepository.findById(id).orElseThrow(() -> new RecordNotFoundException("Cinema not found"));
-        ArrayList<DirectorModel> directors = new ArrayList<>();
-        for (Director director : cinema.getDirectors()) directors.add(new DirectorModel(director));
 
-        return directors;
+        return new ArrayList<>((cinema.getDirectors().stream().map(DirectorModel::new).toList()));
     }
 
     public CinemaModel addDirector(Integer cinemaId, Integer directorId) {
