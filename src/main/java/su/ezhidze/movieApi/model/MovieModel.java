@@ -26,8 +26,10 @@ public class MovieModel {
         id = movie.getId();
         title = movie.getTitle();
         year = movie.getYear();
-        directorName = movie.getDirector().getName();
-        directorId = movie.getDirector().getId();
+        if (movie.getDirector() != null) {
+            directorName = movie.getDirector().getName();
+            directorId = movie.getDirector().getId();
+        }
         length = movie.getLength();
         rating = movie.getRating();
     }

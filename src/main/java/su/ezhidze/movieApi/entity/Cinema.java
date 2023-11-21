@@ -4,13 +4,15 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 public class Cinema {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,10 +23,10 @@ public class Cinema {
     @Size(max = 100, message = "Name length should not be greater than 100 symbols")
     private String name;
 
-    @NotNull(message = "City field cannot be null")
-    @Size(min = 1, message = "City field should not be empty")
-    @Size(max = 100, message = "City field length should not be greater than 100 symbols")
-    private String city;
+    @NotNull(message = "Address cannot be null")
+    @Size(min = 1, message = "Address should not be empty")
+    @Size(max = 100, message = "Address length should not be greater than 100 symbols")
+    private String address;
 
     @NotNull(message = "Capacity field cannot be null")
     @Min(value = 10, message = "Cinema should not be less than 10")
@@ -37,6 +39,7 @@ public class Cinema {
     private List<Director> directors;
 
     public Cinema() {
+        movies = new ArrayList<>();
         directors = new ArrayList<>();
     }
 }

@@ -3,6 +3,8 @@ package su.ezhidze.movieApi.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import su.ezhidze.movieApi.entity.Director;
+import su.ezhidze.movieApi.entity.Movie;
+import su.ezhidze.movieApi.exception.BadRequestException;
 import su.ezhidze.movieApi.exception.DuplicateEntryException;
 import su.ezhidze.movieApi.exception.RecordNotFoundException;
 import su.ezhidze.movieApi.model.DirectorModel;
@@ -17,12 +19,12 @@ import java.util.Map;
 public class DirectorService {
 
     @Autowired
-    DirectorRepository directorRepository;
+    private DirectorRepository directorRepository;
 
     @Autowired
     private MovieRepository movieRepository;
 
-    public DirectorModel addNewDirector(Director director) {
+    public DirectorModel addNewDirector(final Director director) {
         if (directorRepository.findByName(director.getName()) != null) {
             throw new DuplicateEntryException("Duplicate director name");
         }
@@ -44,7 +46,28 @@ public class DirectorService {
 
     public DirectorModel addMovie(Integer directorId, Integer movieId) {
         Director director = directorRepository.findById(directorId).orElseThrow(() -> new RecordNotFoundException("Director not found"));
-        director.getMovies().add(movieRepository.findById(movieId).orElseThrow(() -> new RecordNotFoundException("Movie not found")));
+        Movie movie = movieRepository.findById(movieId).orElseThrow(() -> new RecordNotFoundException("Movie not found"));
+        if (movie.getDirector() == null) {
+            movie.setDirector(director);
+            movieRepository.save(movie);
+        } else throw new BadRequestException("Provided movie belongs to other director");
+
+        director.getMovies().add(movie);
+        return new DirectorModel(director);
+    }
+
+    public DirectorModel deleteMovie(Integer directorId, Integer movieId) {
+        Director director = directorRepository.findById(directorId).orElseThrow(() -> new RecordNotFoundException("Director not found"));
+        Movie movie = movieRepository.findById(movieId).orElseThrow(() -> new RecordNotFoundException("Movie not found"));
+
+        if (!director.getMovies().contains(movie)) {
+            throw new BadRequestException("Director doesn't have that movie");
+        } else {
+            movie.setDirector(null);
+            director.getMovies().remove(movie);
+            movieRepository.save(movie);
+            directorRepository.save(director);
+        }
 
         return new DirectorModel(director);
     }

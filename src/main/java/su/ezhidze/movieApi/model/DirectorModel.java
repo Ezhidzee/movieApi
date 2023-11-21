@@ -19,6 +19,6 @@ public class DirectorModel {
         movies = new ArrayList<>();
         id = director.getId();
         name = director.getName();
-        for (Movie i : director.getMovies()) movies.add(new MovieModel(i));
+        movies = director.getMovies().stream().map(MovieModel::new).toList();
     }
 }
