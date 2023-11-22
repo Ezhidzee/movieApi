@@ -32,10 +32,10 @@ public class Cinema {
     @Min(value = 10, message = "Cinema should not be less than 10")
     private Integer capacity;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER)
     private List<Movie> movies;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER)
     private List<Director> directors;
 
     public Cinema() {
